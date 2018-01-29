@@ -8,7 +8,8 @@ To see pretty status bars while this script is running install progress with:
 pip install progress
 ```
 
-To run use:
+To run:
+First make sure that the user data is stored at `user_logs/` or else change `DATA_PATH` in `generate_features.py`.
 ```
 python generate_features.py
 ```
@@ -28,6 +29,7 @@ I wanted to come up with a list of possible features that I would want to collec
 
 
 **Notes while reading and parsing data:**
+
 I attempted to read in all the user data and while reading it in found these errors:
 Could not json parse ./user_logs/user-55/device-1/collated_sms_log.txt.
 ./user_logs/user-83/device-1 contained no user data files.
@@ -91,50 +93,57 @@ Out[7]:
  u'phone_number'}
 ```
 
-# Here's a list of all the features I thought of just from looking at the possible data points.
-number of total contacts
-number of international calls
-number of calls from international numbers
-number of # calls / sms
-number of * calls / sms
-average duration of call
-average monthly usage of minutes
-average number of monthly calls / sms
-average message body length
-average length of known contacts
-longest length of known contact
-number of contacts contacted within a week
-percent of contacts contacted withing a week
-average number of times contacted
-overall sms sentiment positive/negative
-number of bad words used in sms
-number of derogatory smss
-grammer score
-spelling score
-Find which words or phrases are most relevant to repaid/defaulted (build word count)
-# "Sylviah, don't let a small debt affect your credit history. You are 16 days late on your Branch loan! Honour your debt of Ksh 852 to Paybill: 998608."
-# What is call_type?
-total data_usage
-# Connected graph
-# how many contacts do you have of people who defaulted / repaid. Can't do this because I don't have the phone numbers of the users. But I imagine this would be interesting to check.
-Number of contacts in common with people who defauled / repaid
-Number of people interacted with in common with people who defaulted / repaid
+**Here's a list of all the features I thought of just from looking at the possible data points:**
+
+ - number of total contacts
+ - number of international calls
+ - number of calls from international numbers
+ - number of # calls / sms
+ - number of * calls / sms
+ - average duration of call
+ - average monthly usage of minutes
+ - average number of monthly calls / sms
+ - average message body length
+ - average length of known contacts
+ - longest length of known contact
+ - number of contacts contacted within a week
+ - percent of contacts contacted withing a week
+ - average number of times contacted
+ - overall sms sentiment positive/negative
+ - number of bad words used in sms
+ - number of derogatory smss
+ - grammer score
+ - spelling score
+ - Find which words or phrases are most relevant to repaid/defaulted (build word count)
+Here's an example of an sms that might be relevant: "Sylviah, don't let a small debt affect your credit history. You are 16 days late on your Branch loan! Honour your debt of Ksh 852 to Paybill: 998608."
+ - total data_usage
+Connected graph: how many contacts do you have of people who defaulted / repaid. Can't do this because I don't have the phone numbers of the users. But I imagine this would be interesting to check.
+ - Number of contacts in common with people who defauled / repaid
+ - Number of people interacted with in common with people who defaulted / repaid
+
+Questions I have:
+ - What is call_type?
 
 
-I turn all datetimes into python datetimes objects to make comparisons easier.
+I turned all datetimes into python datetimes objects to make comparisons easier:
+
 contact_list:
  - date_added
  - last_time_contacted
+
 sms_log:
  - datetime
+
 call_log:
  - datetime
 
 
 After writing all the features and outputting the data to a csv file, I inspected the data.
 Looking at the data I saw this:
-ave_daily_interactions  ave_daily_sms_count
-36.1945945945946         77.07462686567165
+```
+ave_daily_interactions |  ave_daily_sms_count
+36.1945945945946       |  77.07462686567165
+```
 
 I know that an sms is an interaction so the number of daily interactions should never be below the number of daily sms. But then I realized, the ave_daily_sms_count is counting the average number of sms sent/received on any day that an sms was sent or received. It's not going day by day and asking how many were sent on that day. So what this means is that there may have been days with tons of sms sent/received, but days with none sent. And on those days with no sms sent/received, if there was one phone call, that would drastically change the ave_daily_interactions. Because of this, I decided to move the ave_daily_sms_count into the build_interaction_stats method and average over all days with interactions which should normalize ave_daily_sms_count and ave_daily_call_count.
 
