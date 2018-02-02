@@ -31,10 +31,13 @@ from features import ALL_FEATURES, build_feature
 progress_installed = False
 try:
     from progress.bar import Bar
+    progress_installed = True
 except:
     print (
         "To see pretty status bars while this script is loading please install "
         "`progress` with `pip install progress`"
+    )
+
 
 CALL_LOG_FILENAME = "collated_call_log.txt"
 CONTACT_LIST_FILENAME = "collated_contact_list.txt"
